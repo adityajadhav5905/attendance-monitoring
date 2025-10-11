@@ -1,0 +1,141 @@
+
+//AttendanceRepository.java
+
+package com.example.attendance.repository;
+
+import com.example.attendance.model.Attendance;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface AttendanceRepository extends JpaRepository<Attendance, Integer> {
+
+    // Custom query methods (optional)
+    List<Attendance> findByBatch(String batch);
+    List<Attendance> findByStudentId(int studentId);
+    List<Attendance> findBySubject(String subject);
+}
+
+
+// Attendance.java
+
+package com.example.attendance.model;
+
+import jakarta.persistence.*;
+import java.sql.Date;
+
+@Entity
+@Table(name = "attendance")
+public class Attendance {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+
+    @Column(name = "student_id", nullable = false)
+    private int studentId;
+
+    @Column(name = "batch", nullable = false)
+    private String batch;
+
+    @Column(name = "subject", nullable = false)
+    private String subject;
+
+    @Column(name = "date", nullable = false)
+    private Date date;
+
+    @Column(name = "status", nullable = false)
+    private String status;
+
+    // Getters and Setters
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
+
+    public int getStudentId() { return studentId; }
+    public void setStudentId(int studentId) { this.studentId = studentId; }
+
+    public String getBatch() { return batch; }
+    public void setBatch(String batch) { this.batch = batch; }
+
+    public String getSubject() { return subject; }
+    public void setSubject(String subject) { this.subject = subject; }
+
+    public Date getDate() { return date; }
+    public void setDate(Date date) { this.date = date; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+}
+
+
+//AttendanceController.java
+
+package com.example.attendance.controller;
+
+import com.example.attendance.model.Attendance;
+import com.example.attendance.repository.AttendanceRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/api/attendance")
+@CrossOrigin(origins = "*")
+public class AttendanceController {
+
+    @Autowired
+    private AttendanceRepository repository;
+
+    // Get all attendance records
+    @GetMapping
+    public List<Attendance> getAllAttendance() {
+        return repository.findAll();
+    }
+
+    // Get attendance by ID
+    @GetMapping("/{id}")
+    public Optional<Attendance> getAttendanceById(@PathVariable int id) {
+        return repository.findById(id);
+    }
+
+    // Add new attendance record
+    @PostMapping
+    public String addAttendance(@RequestBody Attendance attendance) {
+        repository.save(attendance);
+        return "Attendance added successfully.";
+    }
+
+    // Update attendance by ID
+    @PutMapping("/{id}")
+    public String updateAttendance(@PathVariable int id, @RequestBody Attendance updatedData) {
+        return repository.findById(id).map(a -> {
+            a.setStatus(updatedData.getStatus());
+            a.setSubject(updatedData.getSubject());
+            a.setBatch(updatedData.getBatch());
+            a.setDate(updatedData.getDate());
+            a.setStudentId(updatedData.getStudentId());
+            repository.save(a);
+            return "Attendance updated successfully.";
+        }).orElse("Attendance not found with ID " + id);
+    }
+
+    // Delete attendance by ID
+    @DeleteMapping("/{id}")
+    public String deleteAttendance(@PathVariable int id) {
+        if (repository.existsById(id)) {
+            repository.deleteById(id);
+            return "Attendance deleted successfully.";
+        }
+        return "Attendance not found with ID " + id;
+    }
+
+    // Get all attendance records by batch
+    @GetMapping("/batch/{batch}")
+    public List<Attendance> getByBatch(@PathVariable String batch) {
+        return repository.findByBatch(batch);
+    }
+}
