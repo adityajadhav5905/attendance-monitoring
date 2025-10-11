@@ -1,26 +1,12 @@
 @echo off
-title Run Full-Stack Project
-
-REM ==========================================
-REM Start Spring Boot Backend
-REM ==========================================
+title Run Attendance Web Project
+set BACKEND_DIR=%~dp0attendance-web
+set FRONTEND_DIR=%~dp0attendance-frontend\frontend
 echo Starting Spring Boot backend...
-start cmd /k "cd /d %~dp0backend && mvn spring-boot:run"
-
-REM ==========================================
-REM Wait a few seconds for backend to start
-REM ==========================================
+start cmd /k "cd /d %BACKEND_DIR% && mvnw spring-boot:run"
 timeout /t 10 > nul
-
-REM ==========================================
-REM Start React Frontend
-REM ==========================================
 echo Starting React frontend...
-start cmd /k "cd /d %~dp0frontend && npm run dev"
-
-REM ==========================================
-REM Open website in default browser
-REM ==========================================
+start cmd /k "cd /d %FRONTEND_DIR% && npm run dev"
 timeout /t 5 > nul
 start http://localhost:3000
 
